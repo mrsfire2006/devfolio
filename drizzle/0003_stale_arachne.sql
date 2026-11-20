@@ -1,0 +1,1 @@
+ALTER TABLE "project" ALTER COLUMN "meta_data" SET DEFAULT 'App';

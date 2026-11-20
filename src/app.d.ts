@@ -10,7 +10,10 @@ declare global {
 		}
 
 		// interface Error {}
-		// interface PageData {}
+		interface PageData {
+			user: User;
+			url:URL
+		}
 		// interface PageState {}
 		// interface Platform {}
 	}
