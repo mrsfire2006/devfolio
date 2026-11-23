@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { ArrowDown, ArrowUpRight } from '@lucide/svelte';
+	import type { Hero } from '#lib/types/profile.ts';
+	import { ArrowDown, Download } from '@lucide/svelte';
 
-	const name = 'Mohamed';
+	let { hero }: { hero: Hero } = $props();
 
 	let mx = $state(0);
 	let my = $state(0);
@@ -46,25 +47,29 @@
 		<div class="hero-copy" use:reveal class:reveal={true}>
 			<span class="badge"><i></i> Available for work</span>
 
-			<p class="hello">HELLO, <b>I'M {name.toUpperCase()}</b></p>
+			<p class="hello">HELLO, <b>I'M {hero.name.toUpperCase()}</b></p>
 
 			<h1 class="display hero-title">
-				<span>I build</span>
-				<span class="accent">real</span>
-				<span>products.</span>
+				<span>{hero.headline}</span>
+
+				{#each hero.lines as line, i (i)}
+					<span class:accent={i === 1}>
+						{line}
+					</span>
+				{/each}
 			</h1>
 
 			<p class="lead">
-				Full-stack developer building products from frontend interfaces and APIs to databases and
-				deployment.
+				{hero.description}
 			</p>
 
 			<div class="actions">
 				<a class="btn dark" href="#work" onclick={(e) => go(e, 'work')}>
 					View my work <ArrowDown size={16} />
 				</a>
-				<a class="btn light" href="#contact" onclick={(e) => go(e, 'contact')}>
-					Let's talk <ArrowUpRight size={16} />
+
+				<a class="btn light" title="CV" href="/cv.pdf" download="Mohamed-Sarhan-Dev-CV.pdf">
+					<Download size={16} />
 				</a>
 			</div>
 		</div>

@@ -1,3 +1,4 @@
+import type { Profile } from '#lib/types/profile.ts';
 import type { User, Session } from 'better-auth';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
@@ -10,10 +11,11 @@ declare global {
 		}
 
 		// interface Error {}
-		interface PageData {
-			user: User;
-			url:URL
-		}
+		// interface PageData {
+		// 	user: User;
+		// 	url: URL;
+		// 	profile:Profile
+		// }
 		// interface PageState {}
 		// interface Platform {}
 	}

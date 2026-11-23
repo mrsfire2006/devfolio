@@ -10,6 +10,7 @@
 		Search,
 		SlidersVertical,
 		Sparkles,
+		User,
 		Wrench
 	} from '@lucide/svelte';
 	import { page } from '$app/state';
@@ -61,6 +62,7 @@
 	// ── Counts للـ badges ──
 	const projects = getProjects('PRIVATE');
 	const skills = getSkills();
+
 	const projectsCount = $derived(projects.data?.value?.length ?? 0);
 	const skillsCount = $derived(skills.data?.value?.length ?? 0);
 
@@ -78,6 +80,13 @@
 			icon: BadgeCheck,
 			tone: 'blue',
 			badge: skillsCount
+		},
+		{
+			title: 'Profile',
+			href: resolve('/studio/dashboard/profile'),
+			icon: User,
+			tone: 'gold',
+		 
 		}
 	]);
 
@@ -93,13 +102,10 @@
 	const isActive = (href: string) => page.url.pathname.startsWith(href);
 
 	const session = authClient.useSession();
- 
 
 	const username = $derived($session.data?.user?.name ?? '');
 
-	const subname = $derived(
-		username.slice(0, 2)
-	);
+	const subname = $derived(username.slice(0, 2));
 </script>
 
 {#snippet navGroup(label: string, GroupIcon: typeof Layers, items: NavItem[])}

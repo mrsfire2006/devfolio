@@ -9,7 +9,10 @@
 		LayoutDashboard,
 		Layers,
 		Search,
-		SlidersVertical
+		SlidersVertical,
+
+		User
+
 	} from '@lucide/svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -17,13 +20,16 @@
 	import * as Sidebar from '#lib/components/ui/sidebar/index.js';
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
 
-	type Tone = 'primary' | 'blue' | 'violet';
+	type Tone = 'primary' | 'blue' | 'violet' | 'gold';
 
-	// classes ثابتة عشان Tailwind يشوفها، والألوان من tokens الـ theme
 	const tones: Record<Tone, { tile: string; active: string }> = {
 		primary: { tile: 'bg-primary/15 text-primary', active: 'bg-primary text-primary-foreground' },
 		blue: { tile: 'bg-blue/15 text-blue', active: 'bg-blue text-background' },
-		violet: { tile: 'bg-violet/15 text-violet', active: 'bg-violet text-background' }
+		violet: { tile: 'bg-violet/15 text-violet', active: 'bg-violet text-background' },
+		gold: {
+			tile: 'bg-gold/15 text-gold',
+			active: 'bg-gold text-background'
+		}
 	};
 
 	const pages: { label: string; href: string; icon: typeof Layers; tone: Tone }[] = [
@@ -39,6 +45,12 @@
 			href: resolve('/studio/dashboard/settings'),
 			icon: SlidersVertical,
 			tone: 'violet'
+		},
+		{
+			label: 'Profile',
+			href: resolve('/studio/dashboard/profile'),
+			icon: User,
+			tone: 'gold'
 		}
 	];
 

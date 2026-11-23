@@ -1,35 +1,14 @@
 <script lang="ts">
 	import { ArrowUpRight, Plus, X } from '@lucide/svelte';
+	import type { About } from '#lib/types/profile.ts';
 
-	const tabs = [
-		{
-			id: 'identity',
-			n: '01',
-			title: 'Identity',
-			pill: 'Who I am',
-			lines: ['I BUILD', 'REAL PRODUCTS.'],
-			text: 'I am a full-stack developer focused on turning ideas into complete, usable products.'
-		},
-		{
-			id: 'approach',
-			n: '02',
-			title: 'Approach',
-			pill: 'How I work',
-			lines: ['IDEA →', 'SHIPPED.'],
-			text: 'I start from the data model and the API, then shape the interface around real user flows. Clean architecture first, polish second.'
-		},
-		{
-			id: 'mindset',
-			n: '03',
-			title: 'Mindset',
-			pill: 'What drives me',
-			lines: ['KEEP IT', 'USEFUL.'],
-			text: 'Small steps, honest trade-offs, and a habit of shipping. If it does not help someone, it does not ship.'
-		}
-	];
-	let tab = $state('identity');
-	const activeTab = $derived(tabs.find((t) => t.id === tab) ?? tabs[0]);
-	const tabIndex = $derived(tabs.findIndex((t) => t.id === tab) + 1);
+	let { about }: { about: About } = $props();
+
+	let tab = $state(about.tabs[0]?.id ?? '');
+
+	const activeTab = $derived(about.tabs.find((t) => t.id === tab) ?? about.tabs[0]);
+
+	const tabIndex = $derived(about.tabs.findIndex((t) => t.id === tab) + 1);
 
 	function reveal(node: HTMLElement) {
 		const io = new IntersectionObserver(
@@ -41,9 +20,11 @@
 			},
 			{ threshold: 0.12 }
 		);
+
 		io.observe(node);
 		return { destroy: () => io.disconnect() };
 	}
+
 	const fullName = 'Mohamed Sarhan';
 </script>
 
@@ -59,7 +40,7 @@
 
 		<div class="about-grid reveal" use:reveal>
 			<div class="tabs">
-				{#each tabs as t (t.id)}
+				{#each about.tabs as t, i (t.id)}
 					<button
 						type="button"
 						class="tab"
@@ -67,7 +48,7 @@
 						aria-expanded={tab === t.id}
 						onclick={() => (tab = t.id)}
 					>
-						<span class="tab-n">{t.n}</span>
+						<span class="tab-n">{String(i + 1).padStart(2, '0')}</span>
 						<span class="tab-t">{t.title}</span>
 						{#if tab === t.id}<X size={20} />{:else}<Plus size={20} />{/if}
 					</button>
@@ -79,27 +60,36 @@
 				</div>
 			</div>
 
-			{#key tab}
-				<article class="card about-card">
-					<div class="card-top">
-						<span class="pill">{activeTab.pill}</span>
-						<span class="round"><ArrowUpRight size={18} /></span>
-					</div>
+			{#if activeTab}
+				{#key tab}
+					<article class="card about-card">
+						<div class="card-top">
+							<span class="pill">{activeTab.pill}</span>
+							<span class="round"><ArrowUpRight size={18} /></span>
+						</div>
 
-					<span class="rule"></span>
+						<span class="rule"></span>
 
-					<h3 class="card-title">
-						{#each activeTab.lines as line (line)}<span>{line}</span>{/each}
-					</h3>
+						<h3 class="card-title">
+							{#each activeTab.lines as line (line)}
+								<span>{line}</span>
+							{/each}
+						</h3>
 
-					<p class="card-text">{activeTab.text}</p>
+						<p class="card-text">{activeTab.text}</p>
 
-					<div class="card-foot">
-						<span>0{tabIndex} / 0{tabs.length}</span>
-						<b>{fullName}</b>
-					</div>
-				</article>
-			{/key}
+						<div class="card-foot">
+							<span
+								>{String(tabIndex).padStart(2, '0')} / {String(about.tabs.length).padStart(
+									2,
+									'0'
+								)}</span
+							>
+							<b>{fullName}</b>
+						</div>
+					</article>
+				{/key}
+			{/if}
 		</div>
 	</div>
 </section>
@@ -229,7 +219,7 @@
 		background: var(--paper);
 		box-shadow: var(--sh-lg);
 	}
- 
+
 	.card-top {
 		display: flex;
 		align-items: center;
@@ -268,4 +258,114 @@
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
+	/* ═════════ About Responsive ═════════ */
+
+@media (max-width: 900px) {
+	.about-grid {
+		grid-template-columns: 240px minmax(0, 1fr);
+		gap: 24px;
+	}
+
+	.tab {
+		padding: 14px;
+		gap: 10px;
+	}
+
+	.tab-t {
+		font-size: 16px;
+	}
+
+	.about-card {
+		min-height: 340px;
+	}
+
+	.card-title {
+		font-size: clamp(34px, 5vw, 58px);
+	}
+}
+
+@media (max-width: 640px) {
+	.about-grid {
+		grid-template-columns: 1fr;
+		gap: 24px;
+	}
+
+	.tabs {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	.tab {
+		min-width: 0;
+		padding: 14px 12px;
+		gap: 8px;
+	}
+
+	.tab-t {
+		font-size: 15px;
+	}
+
+	.tab-n {
+		font-size: 9px;
+	}
+
+	.status {
+		grid-column: 1 / -1;
+		margin-top: 4px;
+		padding: 14px 16px;
+	}
+
+	.status p {
+		font-size: 10px;
+	}
+
+	.about-card {
+		min-height: 320px;
+		padding: 24px 20px;
+	}
+
+	.rule {
+		margin: 32px 0 18px;
+	}
+
+	.card-title {
+		font-size: clamp(38px, 10vw, 58px);
+	}
+
+	.card-text {
+		font-size: 14px;
+	}
+
+	.card-foot {
+		gap: 12px;
+		font-size: 9px;
+	}
+}
+
+@media (max-width: 380px) {
+	.tabs {
+		grid-template-columns: 1fr;
+	}
+
+	.tab {
+		padding: 14px 16px;
+	}
+
+	.status {
+		grid-column: auto;
+	}
+
+	.about-card {
+		padding: 22px 16px;
+	}
+
+	.card-title {
+		font-size: 36px;
+	}
+
+	.card-foot {
+		letter-spacing: 0.06em;
+	}
+}
 </style>

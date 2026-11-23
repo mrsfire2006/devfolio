@@ -413,6 +413,9 @@
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
+		max-height: 620px;
+		overflow-y: auto;
+		overflow-x: hidden;
 		border-right: var(--bd);
 	}
 
@@ -425,7 +428,25 @@
 		padding: 20px 24px;
 		font: 700 9px/1 var(--font-mono);
 		letter-spacing: 0.13em;
+	}
+
+	.plist-heading {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		background: var(--paper);
+		border-bottom: var(--bd);
+		box-shadow: 0 4px 8px color-mix(in oklab, var(--ink) 5%, transparent);
+	}
+
+	.plist-heading span,
+	.plist-footer span {
 		opacity: 0.55;
+	}
+
+	.plist-footer {
+		margin-top: auto;
+		border-top: var(--bd);
 	}
 
 	.plist-heading {
@@ -1026,14 +1047,43 @@
 		}
 	}
 
+	.plist::-webkit-scrollbar {
+		width: 8px;
+	}
+	.plist::-webkit-scrollbar-track {
+		background: transparent;
+		margin-block: 12px;
+	}
+	.plist::-webkit-scrollbar-thumb {
+		background: color-mix(in oklab, var(--ink) 25%, transparent);
+		border-radius: 999px;
+		border: 1px solid transparent;
+		background-clip: padding-box;
+	}
+
+	.plist::-webkit-scrollbar-thumb:hover {
+		background: color-mix(in oklab, var(--ink) 50%, transparent);
+		background-clip: padding-box;
+	}
 	@media (max-width: 650px) {
 		.panel {
 			grid-template-columns: 1fr;
 		}
 
 		.plist {
-			border-right: 0;
-			border-bottom: var(--bd);
+			max-height: 300px;
+			overflow-y: auto;
+			overflow-x: hidden;
+
+			scrollbar-width: thin;
+			scrollbar-color: color-mix(in oklab, var(--ink) 30%, transparent) transparent;
+		}
+
+		.plist-heading {
+			position: sticky;
+			top: 0;
+			z-index: 5;
+			background: var(--paper);
 		}
 
 		.plist-footer {
