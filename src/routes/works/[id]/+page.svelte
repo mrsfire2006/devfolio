@@ -6,7 +6,6 @@
 		ArrowLeft,
 		ArrowUpRight,
 		ExternalLink,
- 
 		RefreshCw,
 		Code2
 	} from '@lucide/svelte';
@@ -14,7 +13,7 @@
 	import { getProject } from '#lib/queries/projects.ts';
 	import type { PublicFullProject } from '#lib/dtos/project/public.ts';
 	import ImageLightBox from '../../_components/ImageLightBox.svelte';
- 
+
 	type ProjectImage = NonNullable<PublicFullProject['images'][number]>;
 
 	const projectQuery = getProject<'PUBLIC'>(() => page.params.id!, 'PUBLIC');
@@ -216,22 +215,56 @@
 					</div>
 
 					<div class="hero-aside" aria-hidden="true">
-						<div class="orbit">
-							<div class="orbit-inner">
-								<Code2 size={48} strokeWidth={1.4} />
-								<span>PROJECT<br />NO. 01</span>
+						<div class="hero-project-card">
+							<div class="hero-card-preview">
+								{#if coverImage}
+									<button
+										type="button"
+										class="hero-card-image"
+										onclick={() => (lightboxIndex = 0)}
+										aria-label={`Preview ${project.name}`}
+									>
+										<img src={coverImage.url} alt={project.name} />
+									</button>
+								{:else}
+									<div class="hero-card-placeholder">
+										<Code2 size={48} />
+										<strong>{project.name}</strong>
+										<span>PROJECT PREVIEW</span>
+									</div>
+								{/if}
+
+								<div class="hero-card-overlay"></div>
+
+								<div class="hero-card-top">
+									<span>PROJECT PREVIEW</span>
+									<span>01 / 01</span>
+								</div>
+
+								<div class="hero-card-bottom">
+									<span class="hero-card-status {statusClass}">
+										<i></i>
+										{statusLabel}
+									</span>
+								</div>
+							</div>
+
+							<div class="hero-card-info">
+								<span>PROJECT OVERVIEW</span>
+								<strong>{project.name}</strong>
+								<p>{project.description || 'A project by Mohamed Sarhan.'}</p>
 							</div>
 						</div>
-
-						<span class="floating-label label-one">DESIGNED</span>
-						<span class="floating-label label-two">DEVELOPED</span>
-						<span class="floating-star">✳</span>
 					</div>
 				</div>
 
 				<div class="hero-foot">
 					<span>SCROLL TO EXPLORE</span>
-					<ArrowDown size={17} />
+
+					<a class="scroll-arrow" href="#preview" aria-label="Scroll to project preview">
+						<ArrowDown size={17} />
+					</a>
+
 					<span>PROJECT / {project.name.toUpperCase()}</span>
 				</div>
 			</div>
@@ -286,7 +319,7 @@
 
 				{#if galleryImages.length > 0}
 					<div class="gallery" use:reveal>
-						{#each galleryImages as image, i ( i)}
+						{#each galleryImages as image, i (i)}
 							<figure class="gallery-item">
 								<button
 									type="button"
@@ -327,11 +360,18 @@
 						<h3>Building<br />something<br /><span>useful.</span></h3>
 
 						<p>{project.description}</p>
-
-						<div class="about-bottom">
-							<span>PROJECT OVERVIEW</span>
-							<ArrowUpRight size={22} />
-						</div>
+						{#if project.livePreview}
+							<a href={project.livePreview} class="about-bottom">
+								<span>PROJECT OVERVIEW</span>
+								<ArrowUpRight size={22} />
+							</a>
+						{/if}
+						{#if project.githubUrl}
+							<a href={project.githubUrl} class="about-bottom">
+								<span>SOURCE CODE</span>
+								<ArrowUpRight size={22} />
+							</a>
+						{/if}
 					</div>
 
 					<div class="about-side">
@@ -351,7 +391,7 @@
 
 						<div class="info-block last">
 							<span class="small-label">PROJECT TYPE</span>
-							<strong>WEB<br />PRODUCT</strong>
+							<strong>{project.metaData}</strong>
 						</div>
 					</div>
 				</div>
@@ -819,12 +859,6 @@
 		align-items: center;
 		gap: 15px;
 		transform: rotate(12deg);
-	}
-
-	.orbit-inner span {
-		font: 700 9px/1.6 var(--font-mono);
-		letter-spacing: 0.12em;
-		text-align: center;
 	}
 
 	.floating-label {
@@ -1472,5 +1506,136 @@
 			animation-iteration-count: 1 !important;
 			transition-duration: 0.01ms !important;
 		}
+	}
+	.hero-project-card {
+		width: min(100%, 390px);
+		border: var(--bd);
+		border-radius: 15px;
+		background: var(--paper);
+		box-shadow: 8px 8px 0 var(--ink);
+		transform: rotate(3deg);
+		transition: transform 0.3s ease;
+	}
+
+	.hero-project-card:hover {
+		transform: rotate(0) translateY(-5px);
+	}
+
+	.hero-card-preview {
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 4 / 3;
+		border-bottom: var(--bd);
+		background: var(--c2);
+	}
+
+	.hero-card-image {
+		display: block;
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		border: 0;
+		cursor: zoom-in;
+	}
+
+	.hero-card-image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.hero-card-placeholder {
+		display: flex;
+		height: 100%;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		text-align: center;
+	}
+
+	.hero-card-placeholder strong {
+		font-size: 28px;
+		font-weight: 900;
+	}
+
+	.hero-card-placeholder span {
+		font: 700 8px var(--font-mono);
+		letter-spacing: 0.15em;
+	}
+
+	.hero-card-overlay {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: linear-gradient(
+			to bottom,
+			rgb(19 26 60 / 30%),
+			transparent 40%,
+			transparent 60%,
+			rgb(19 26 60 / 55%)
+		);
+	}
+
+	.hero-card-top,
+	.hero-card-bottom {
+		position: absolute;
+		right: 15px;
+		left: 15px;
+		display: flex;
+		justify-content: space-between;
+		color: white;
+		font: 700 8px var(--font-mono);
+		letter-spacing: 0.1em;
+	}
+
+	.hero-card-top {
+		top: 15px;
+	}
+
+	.hero-card-bottom {
+		bottom: 15px;
+	}
+
+	.hero-card-status {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		text-transform: uppercase;
+	}
+
+	.hero-card-status i {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--gold-d);
+	}
+
+	.hero-card-status.completed i {
+		background: #65d69a;
+	}
+
+	.hero-card-info {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 20px;
+	}
+
+	.hero-card-info > span {
+		font: 700 8px var(--font-mono);
+		letter-spacing: 0.13em;
+	}
+
+	.hero-card-info strong {
+		font-size: 25px;
+		font-weight: 900;
+		overflow-wrap: anywhere;
+	}
+
+	.hero-card-info p {
+		margin: 0;
+		font-size: 11px;
+		line-height: 1.6;
 	}
 </style>

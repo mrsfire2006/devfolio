@@ -36,6 +36,7 @@
 	let description = $state(project.description ?? '');
 	let githubUrl = $state(project.githubUrl ?? '');
 	let livePreview = $state(project.livePreview ?? '');
+	let appType = $state(project.metaData ?? '');
 	let status = $state<ProjectStatus>(project.status ?? 'IN_PROGRESS');
 	let submitting = $state(false);
 	let errorMessage = $state('');
@@ -73,7 +74,7 @@
 		description = project.description ?? '';
 		githubUrl = project.githubUrl ?? '';
 		livePreview = project.livePreview ?? '';
-
+		appType = project.metaData ?? '';
 		status = project.status ?? 'IN_PROGRESS';
 		errorMessage = '';
 		newIds = [];
@@ -212,6 +213,19 @@
 					bind:value={livePreview}
 					type="url"
 					placeholder="https://your-project.com"
+					class={field}
+				/>
+			</div>
+			<div class="space-y-1.5">
+				<label for="edit-project-app-type" class="flex items-center gap-1.5 text-sm font-medium">
+					<Layers class="size-3.5 text-violet" />
+					App type
+				</label>
+				<input
+					id="edit-project-app-type"
+					bind:value={appType}
+					maxlength={40}
+					placeholder="e.g. Web application, Desktop app, CLI"
 					class={field}
 				/>
 			</div>

@@ -27,6 +27,7 @@
 	let name = $state('');
 	let description = $state('');
 	let githubUrl = $state('');
+	let appType = $state('');
 	let livePreview = $state('');
 	let status = $state<CreateProject['status']>('IN_PROGRESS');
 	let submitting = $state(false);
@@ -69,7 +70,9 @@
 					description: description.trim() || null,
 					githubUrl: githubUrl.trim() || null,
 					livePreview: livePreview.trim() || null,
-
+					metaData: {
+						appType: appType.trim() || null
+					},
 					status
 				})
 			});
@@ -83,6 +86,7 @@
 				description = '';
 				githubUrl = '';
 				livePreview = '';
+				appType = '';
 
 				status = 'IN_PROGRESS';
 			}
@@ -179,6 +183,19 @@
 					bind:value={livePreview}
 					type="url"
 					placeholder="https://your-project.com"
+					class={field}
+				/>
+			</div>
+			<div class="space-y-1.5">
+				<label for="project-app-type" class="flex items-center gap-1.5 text-sm font-medium">
+					<Layers class="size-3.5 text-violet" />
+					App type
+				</label>
+				<input
+					id="project-app-type"
+					bind:value={appType}
+					maxlength={40}
+					placeholder="e.g. Web application, Desktop app, CLI"
 					class={field}
 				/>
 			</div>
