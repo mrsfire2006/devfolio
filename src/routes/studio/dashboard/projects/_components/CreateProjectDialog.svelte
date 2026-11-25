@@ -4,6 +4,7 @@
 		CircleCheck,
 		CircleDot,
 		Flag,
+		Globe,
 		Layers,
 		Link2,
 		LoaderCircle,
@@ -13,7 +14,7 @@
 	} from '@lucide/svelte';
 	import * as Dialog from '#lib/components/ui/dialog/index.js';
 
- 	import AppDialog from '#lib/components/shared/AppDialog.svelte';
+	import AppDialog from '#lib/components/shared/AppDialog.svelte';
 	import { ClientFetch } from '#lib/client-fetch.ts';
 	import { resolve } from '$app/paths';
 	import { useQueryClient } from '@tanstack/svelte-query';
@@ -26,6 +27,7 @@
 	let name = $state('');
 	let description = $state('');
 	let githubUrl = $state('');
+	let livePreview = $state('');
 	let status = $state<CreateProject['status']>('IN_PROGRESS');
 	let submitting = $state(false);
 	let errorMessage = $state('');
@@ -66,6 +68,8 @@
 					name: cleanName,
 					description: description.trim() || null,
 					githubUrl: githubUrl.trim() || null,
+					livePreview: livePreview.trim() || null,
+
 					status
 				})
 			});
@@ -78,6 +82,8 @@
 				name = '';
 				description = '';
 				githubUrl = '';
+				livePreview = '';
+
 				status = 'IN_PROGRESS';
 			}
 		} catch (error) {
@@ -160,6 +166,19 @@
 					bind:value={githubUrl}
 					type="url"
 					placeholder="https://github.com/username/repository"
+					class={field}
+				/>
+			</div>
+			<div class="space-y-1.5">
+				<label for="project-live-preview" class="flex items-center gap-1.5 text-sm font-medium">
+					<Globe class="size-3.5 text-blue" />
+					Live preview URL
+				</label>
+				<input
+					id="project-live-preview"
+					bind:value={livePreview}
+					type="url"
+					placeholder="https://your-project.com"
 					class={field}
 				/>
 			</div>

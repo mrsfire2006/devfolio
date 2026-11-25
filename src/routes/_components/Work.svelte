@@ -2,6 +2,7 @@
 	import { getProjects } from '#lib/queries/projects.ts';
 	import { ArrowRight, ArrowUpRight, X } from '@lucide/svelte';
 	import SkillIcon from '../studio/dashboard/skills/_components/SkillIcon.svelte';
+	import { resolve } from '$app/paths';
 
 	function reveal(node: HTMLElement) {
 		const io = new IntersectionObserver(
@@ -274,22 +275,16 @@
 											{project.name?.trim() || 'Untitled project'}
 										</h3>
 									</div>
-
-									{#if project.livePreview || project.githubUrl}
-										<a
-											class="round"
-											href={project.livePreview || project.githubUrl || '#'}
-											target="_blank"
-											rel="noopener noreferrer"
-											aria-label="Open project"
-										>
-											<ArrowUpRight size={18} />
-										</a>
-									{:else}
-										<span class="round">
-											<ArrowUpRight size={18} />
-										</span>
-									{/if}
+									<!--  project  -->
+									<a
+										class="round"
+										href={resolve("/works/[id]",{id:project.id})}
+										target="_blank"
+										rel="noopener noreferrer"
+										aria-label="Open project"
+									>
+										<ArrowUpRight size={18} />
+									</a>
 								</div>
 
 								<p class="project-description">

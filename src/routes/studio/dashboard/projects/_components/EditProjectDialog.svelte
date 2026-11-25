@@ -5,6 +5,7 @@
 		CircleCheck,
 		CircleDot,
 		Flag,
+		Globe,
 		Layers,
 		Link2,
 		LoaderCircle,
@@ -14,7 +15,6 @@
 	} from '@lucide/svelte';
 	import * as Dialog from '#lib/components/ui/dialog/index.js';
 
- 
 	import AppDialog from '#lib/components/shared/AppDialog.svelte';
 	import { ClientFetch } from '#lib/client-fetch.ts';
 	import { getSkills } from '#lib/queries/skills.ts';
@@ -23,7 +23,7 @@
 	import SkillPicker from './SkillPicker.svelte';
 	import type { ProjectStatus } from '#lib/server/db/schemas/project.schema.ts';
 	import type { PrivateProjectCard } from '#lib/dtos/project/private.ts';
-  
+
 	interface Props {
 		project: PrivateProjectCard;
 		open: boolean;
@@ -35,6 +35,7 @@
 	let name = $state(project.name);
 	let description = $state(project.description ?? '');
 	let githubUrl = $state(project.githubUrl ?? '');
+	let livePreview = $state(project.livePreview ?? '');
 	let status = $state<ProjectStatus>(project.status ?? 'IN_PROGRESS');
 	let submitting = $state(false);
 	let errorMessage = $state('');
@@ -71,6 +72,8 @@
 		name = project.name;
 		description = project.description ?? '';
 		githubUrl = project.githubUrl ?? '';
+		livePreview = project.livePreview ?? '';
+
 		status = project.status ?? 'IN_PROGRESS';
 		errorMessage = '';
 		newIds = [];
@@ -92,6 +95,8 @@
 					name: cleanName,
 					description: description.trim() || null,
 					githubUrl: githubUrl.trim() || null,
+					livePreview: livePreview.trim() || null,
+
 					status
 				})
 			});
@@ -191,6 +196,22 @@
 					bind:value={githubUrl}
 					type="url"
 					placeholder="https://github.com/username/repository"
+					class={field}
+				/>
+			</div>
+			<div class="space-y-1.5">
+				<label
+					for="edit-project-live-preview"
+					class="flex items-center gap-1.5 text-sm font-medium"
+				>
+					<Globe class="size-3.5 text-blue" />
+					Live preview URL
+				</label>
+				<input
+					id="edit-project-live-preview"
+					bind:value={livePreview}
+					type="url"
+					placeholder="https://your-project.com"
 					class={field}
 				/>
 			</div>

@@ -4,11 +4,7 @@ import { project, projectImages } from '#lib/server/db/schemas/project.schema.ts
 import { imagekit } from '#lib/server/imagekit.ts';
 import { ServerResult } from '#lib/dtos/result.ts';
 import { eq } from 'drizzle-orm';
-import type {
-	EditProject,
-	PrivateFullProject,
-	PrivateProjectCard
-} from '#lib/dtos/project/private.ts';
+import { privateFullProjectSchema, type EditProject, type PrivateFullProject } from '#lib/dtos/project/private.ts';
 
 export const PATCH = requireAuth(async ({ request, params }) => {
 	const body = (await request.json()) as EditProject;
@@ -92,7 +88,7 @@ export const DELETE = requireAuth(async ({ params }) => {
 	}
 });
 
-export const GET = requireAuth(async ({ params, url }) => {
+export const GET = requireAuth(async ({ params }) => {
 	const projectId = params.id;
 
 	if (!projectId) {
@@ -101,41 +97,29 @@ export const GET = requireAuth(async ({ params, url }) => {
 		});
 	}
 
-	const isFull = url.searchParams.get('include') === 'full';
-
 	try {
-		const row = isFull
-			? await db.query.project.findFirst({
-					where: eq(project.id, projectId),
+		const row = await db.query.project.findFirst({
+			where: eq(project.id, projectId),
+			with: {
+				images: {
+					orderBy: (img, { asc }) => [asc(img.createdAt)]
+				},
+				projectSkills: {
+					columns: { projectId: false, skillId: false },
 					with: {
-						images: { orderBy: (img, { asc }) => [asc(img.createdAt)] },
-						projectSkills: {
-							columns: { projectId: false, skillId: false },
-							with: {
-								skill: true
-							}
-						}
+						skill: true
 					}
-				})
-			: await db.query.project.findFirst({
-					where: eq(project.id, projectId),
-					with: {
-						images: { orderBy: (img, { asc }) => [asc(img.createdAt)], limit: 1 },
-						projectSkills: {
-							columns: { projectId: false, skillId: false },
-							with: {
-								skill: { columns: { name: true, icon: true } }
-							}
-						}
-					}
-				});
+				}
+			}
+		});
 
 		if (!row) {
 			return Response.json(ServerResult.Failure('Project not found.').GetClientResult(), {
 				status: 404
 			});
 		}
-		const result: PrivateFullProject | PrivateProjectCard = {
+
+		const result: PrivateFullProject = {
 			id: row.id,
 			name: row.name,
 			description: row.description,
@@ -149,8 +133,9 @@ export const GET = requireAuth(async ({ params, url }) => {
 			totalSkills: row.projectSkills.length,
 			skills: row.projectSkills.map((ps) => ps.skill!)
 		};
+		const validatedResult = privateFullProjectSchema.parse(result);
 
-		return Response.json(ServerResult.Success(result).GetClientResult());
+		return Response.json(ServerResult.Success(validatedResult).GetClientResult());
 	} catch (error) {
 		console.error('Failed to get project:', error);
 

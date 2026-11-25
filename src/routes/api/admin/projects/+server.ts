@@ -5,7 +5,6 @@ import { project } from '#lib/server/db/schemas/project.schema.ts';
 import { ServerResult } from '#lib/dtos/result.ts';
 import { randomUUID } from 'crypto';
 import { privateProjectCardSchema, type CreateProject } from '#lib/dtos/project/private.ts';
-import { publicProjectCardSchema } from '#lib/dtos/project/public.ts';
 
 const validedProject = (project: CreateProject): boolean => {
 	if (
@@ -50,20 +49,13 @@ export const POST = requireAuth(async ({ request }) => {
 	}
 });
 
-export const GET = requireAuth(async ({ url }) => {
-	const isPrivate = url.searchParams.get('domain') === 'private';
-
+export const GET = requireAuth(async () => {
 	try {
 		const rows = await db.query.project.findMany({
 			with: {
 				images: {
 					orderBy: (img, { asc }) => [asc(img.createdAt)],
-					limit: 1,
-					columns: isPrivate
-						? undefined
-						: {
-								url: true
-							}
+					limit: 1
 				},
 				projectSkills: {
 					columns: {
@@ -71,30 +63,24 @@ export const GET = requireAuth(async ({ url }) => {
 						skillId: false
 					},
 					with: {
-						skill: {
-							columns: {
-								id: isPrivate,
-								name: true,
-								description: isPrivate,
-								icon: true,
-								createdAt: isPrivate
-							}
-						}
+						skill: true
 					}
 				}
 			}
 		});
 
-		const result = rows.map(({ projectSkills, images, ...project }) => ({
-			...project,
-			image: images[0] ?? null,
-			skills: projectSkills.map(({ skill }) => skill).filter((skill) => skill !== null),
-			totalSkills: projectSkills.length
-		}));
+		const result = rows.map(({ projectSkills, images, ...project }) => {
+			const skills = projectSkills.map(({ skill }) => skill).filter((skill) => skill !== null);
 
-		const responseSchema = isPrivate ? privateProjectCardSchema : publicProjectCardSchema;
+			return {
+				...project,
+				image: images[0] ?? null,
+				skills,
+				totalSkills: skills.length
+			};
+		});
 
-		const validatedResult = responseSchema.array().parse(result);
+		const validatedResult = privateProjectCardSchema.array().parse(result);
 
 		return Response.json(ServerResult.Success(validatedResult).GetClientResult());
 	} catch (error) {

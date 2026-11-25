@@ -1,10 +1,10 @@
- import { db } from '#lib/server/db/index.js';
+import { db } from '#lib/server/db/index.js';
 import { project } from '#lib/server/db/schemas/project.schema.ts';
- import { ServerResult } from '#lib/dtos/result.ts';
+import { ServerResult } from '#lib/dtos/result.ts';
 import { eq } from 'drizzle-orm';
-import type { PublicFullProject, PublicProjectCard } from '#lib/dtos/project/public.ts';
+import type { PublicFullProject } from '#lib/dtos/project/public.ts';
 
-export const GET = async ({ params, url }) => {
+export const GET = async ({ params }) => {
 	const projectId = params.id;
 
 	if (!projectId) {
@@ -13,49 +13,46 @@ export const GET = async ({ params, url }) => {
 		});
 	}
 
-	const isFull = url.searchParams.get('include') === 'full';
-
 	try {
-		const row = isFull
-			? await db.query.project.findFirst({
-					where: eq(project.id, projectId),
+		const row = await db.query.project.findFirst({
+			where: eq(project.id, projectId),
+			with: {
+				images: {
+					columns: { url: true },
+					orderBy: (img, { asc }) => [asc(img.createdAt)]
+				},
+				projectSkills: {
+					columns: {
+						projectId: false,
+						skillId: false
+					},
 					with: {
-						images: { orderBy: (img, { asc }) => [asc(img.createdAt)] },
-						projectSkills: {
-							columns: { projectId: false, skillId: false },
-							with: {
-								skill: { columns: { name: true, icon: true } }
+						skill: {
+							columns: {
+								name: true,
+								icon: true
 							}
 						}
 					}
-				})
-			: await db.query.project.findFirst({
-					where: eq(project.id, projectId),
-					with: {
-						images: { orderBy: (img, { asc }) => [asc(img.createdAt)], limit: 1 },
-						projectSkills: {
-							columns: { projectId: false, skillId: false },
-							with: {
-								skill: { columns: { name: true, icon: true } }
-							}
-						}
-					}
-				});
+				}
+			}
+		});
 
 		if (!row) {
 			return Response.json(ServerResult.Failure('Project not found.').GetClientResult(), {
 				status: 404
 			});
 		}
-		const result: PublicFullProject | PublicProjectCard = {
+
+		const result: PublicFullProject = {
 			id: row.id,
 			name: row.name,
 			description: row.description,
 			images: row.images,
 			githubUrl: row.githubUrl,
 			status: row.status,
-			livePreview:row.livePreview,
-			metaData:row.metaData,
+			livePreview: row.livePreview,
+			metaData: row.metaData,
 			totalSkills: row.projectSkills.length,
 			skills: row.projectSkills.map((ps) => ps.skill!)
 		};

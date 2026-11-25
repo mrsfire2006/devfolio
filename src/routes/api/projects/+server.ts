@@ -1,63 +1,53 @@
 import { db } from '#lib/server/db/index.js';
 import { ServerResult } from '#lib/dtos/result.ts';
-import type { PublicFullProject, PublicProjectCard } from '#lib/dtos/project/public.ts';
+import { publicProjectCardSchema, type PublicProjectCard } from '#lib/dtos/project/public.ts';
 
-export const GET = async ({ url }) => {
-	const isFull = url.searchParams.get('include') === 'full';
-
+export const GET = async () => {
 	try {
-		if (isFull) {
-			const rows = await db.query.project.findMany({
-				columns: { createdAt: false, updatedAt: false },
-				with: {
-					images: {
-						columns: { fileId: false },
-						orderBy: (img, { asc }) => [asc(img.createdAt)]
-					},
-					projectSkills: {
-						columns: { projectId: false, skillId: false },
-						with: {
-							skill: {
-								columns: { name: true, icon: true }
-							}
-						}
-					}
-				}
-			});
-			const result: PublicFullProject[] = rows.map(({ projectSkills, ...project }) => ({
-				...project,
-				skills: projectSkills.map(({ skill }) => skill!),
-				totalSkills: projectSkills.length
-			}));
-			return Response.json(ServerResult.Success(result).GetClientResult());
-		}
-
 		const rows = await db.query.project.findMany({
-			columns: { createdAt: false, updatedAt: false },
+			columns: {
+				createdAt: false,
+				updatedAt: false
+			},
 			with: {
 				images: {
-					columns: { fileId: false },
+					columns: {
+						url: true
+					},
 					orderBy: (img, { asc }) => [asc(img.createdAt)],
 					limit: 1
 				},
 				projectSkills: {
-					columns: { projectId: false, skillId: false },
+					columns: {
+						projectId: false,
+						skillId: false
+					},
 					with: {
 						skill: {
-							columns: { name: true, icon: true }
+							columns: {
+								name: true,
+								icon: true
+							}
 						}
 					}
 				}
 			}
 		});
-		const result: PublicProjectCard[] = rows.map(({ projectSkills, ...project }) => ({
-			...project,
-			skills: projectSkills.map(({ skill }) => skill!),
-			totalSkills: projectSkills.length,
-			image: project.images[0]
-		}));
 
-		return Response.json(ServerResult.Success(result).GetClientResult());
+		const result: PublicProjectCard[] = rows.map(({ projectSkills, images, ...project }) => {
+			const skills = projectSkills.map(({ skill }) => skill).filter((skill) => skill !== null);
+
+			return {
+				...project,
+				image: images[0] ? { url: images[0].url } : null,
+				skills,
+				totalSkills: skills.length
+			};
+		});
+
+		const validatedResult = publicProjectCardSchema.array().parse(result);
+
+		return Response.json(ServerResult.Success(validatedResult).GetClientResult());
 	} catch (error) {
 		console.error('Failed to get projects:', error);
 

@@ -22,9 +22,11 @@
 	import { getProject } from '#lib/queries/projects.ts';
 	import SkillIcon from '../../skills/_components/SkillIcon.svelte';
 
-	const projectQuery = getProject(() => page.params.id!, 'PRIVATE', true);
+	const projectQuery = getProject<'PRIVATE'>(() => page.params.id!, 'PRIVATE');
 	const project = $derived(projectQuery.data?.value ?? null);
-
+	const projectImages = $derived(
+		project?.images.filter((image): image is NonNullable<typeof image> => image !== null) ?? []
+	);
 	// Reactive DOM reference in Svelte 5
 	let fileInput = $state<HTMLInputElement | undefined>(undefined);
 
@@ -303,8 +305,8 @@
 								<h2 class="mt-1 text-base font-semibold text-foreground">Project gallery</h2>
 
 								<p class="mt-1 text-xs text-muted-foreground">
-									{project.images.length}
-									{project.images.length === 1 ? 'image' : 'images'}
+									{projectImages.length}
+									{projectImages.length === 1 ? 'image' : 'images'}
 								</p>
 							</div>
 
@@ -333,11 +335,11 @@
 							</Button>
 						</div>
 
-						{#if project.images.length > 0}
+						{#if projectImages.length > 0}
 							<div
 								class="flex snap-x snap-mandatory scrollbar-thin [scrollbar-color:var(--border)_transparent] gap-3 overflow-x-auto overscroll-x-contain p-3 sm:gap-4 sm:p-4"
 							>
-								{#each project.images as image, index (image.id)}
+								{#each projectImages as image, index (image.id)}
 									<div
 										class="group/image relative max-w-[85%] min-w-[85%] shrink-0 snap-start overflow-hidden border border-border bg-background sm:max-w-[48%] sm:min-w-[48%] xl:max-w-[40%] xl:min-w-[40%]"
 									>
@@ -353,7 +355,7 @@
 										>
 											{String(index + 1).padStart(2, '0')}
 											<span class="text-muted-foreground"
-												>/ {String(project.images.length).padStart(2, '0')}</span
+												>/ {String(projectImages.length).padStart(2, '0')}</span
 											>
 										</span>
 
@@ -511,7 +513,7 @@
 								<div class="min-w-0">
 									<p class="text-xs text-muted-foreground">Images</p>
 									<p class="mt-1 text-sm font-medium text-foreground">
-										{project.images.length}
+										{projectImages.length}
 									</p>
 								</div>
 							</div>
