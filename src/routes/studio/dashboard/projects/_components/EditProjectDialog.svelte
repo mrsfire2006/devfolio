@@ -97,7 +97,7 @@
 					description: description.trim() || null,
 					githubUrl: githubUrl.trim() || null,
 					livePreview: livePreview.trim() || null,
-
+					metaData: appType.trim() || null,
 					status
 				})
 			});

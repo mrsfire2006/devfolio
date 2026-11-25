@@ -28,6 +28,7 @@ export const createProjectSchema = projectSchema.omit({
 	createdAt: true,
 	updatedAt: true
 });
+
 export const editProjectSchema = privateProjectCardSchema.omit({
 	createdAt: true,
 	updatedAt: true
