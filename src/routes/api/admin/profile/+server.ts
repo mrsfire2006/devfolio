@@ -1,17 +1,54 @@
 import { error } from '@sveltejs/kit';
 import { db } from '#lib/server/db/index.ts';
 import { profile } from '#lib/server/db/schemas/profile.schema.ts';
-import { profileSchema } from '#lib/schemas/profile/profile.schema.ts';
+import { profileSchema, type Profile } from '#lib/schemas/profile/profile.schema.ts';
 import { ServerResult } from '#lib/dtos/result.ts';
+import { eq } from 'drizzle-orm';
 
-async function getProfile() {
-	const records = await db.select().from(profile).limit(2);
+async function getProfile(): Promise<Profile> {
+	const [existingProfile] = await db.select().from(profile).where(eq(profile.id, 'main')).limit(1);
 
-	if (records.length > 1) {
-		throw new Error('Expected exactly one profile record.');
+	if (existingProfile) {
+		return existingProfile;
 	}
 
-	return records[0] ?? null;
+	const emptyProfile = {
+		id: 'main',
+		about: {
+			tabs: []
+		},
+		hero: {
+			name: '',
+			headline: '',
+			lines: [],
+			description: ''
+		},
+		contact: {
+			links: []
+		}
+	};
+
+	const [createdProfile] = await db
+		.insert(profile)
+		.values(emptyProfile)
+		.onConflictDoNothing({ target: profile.id })
+		.returning();
+
+	if (createdProfile) {
+		return createdProfile;
+	}
+
+	const [concurrentProfile] = await db
+		.select()
+		.from(profile)
+		.where(eq(profile.id, 'main'))
+		.limit(1);
+
+	if (!concurrentProfile) {
+		throw new Error('Failed to initialize profile.');
+	}
+
+	return concurrentProfile;
 }
 export const GET = async () => {
 	const profile = await getProfile();
