@@ -1,4 +1,4 @@
- import { requireAuth } from '#lib/server/auth.helper.ts';
+import { requireAuth } from '#lib/server/auth.helper.ts';
 import { db } from '#lib/server/db/index.ts';
 import { skill } from '#lib/server/db/schemas/skill.schema.ts';
 import { ServerResult } from '#lib/dtos/result.ts';
@@ -27,7 +27,7 @@ export const POST = requireAuth(async ({ request }) => {
 		});
 	}
 });
-export const GET = requireAuth(async () => {
+export const GET = async () => {
 	try {
 		const skills = await db.query.skill.findMany({
 			columns: { createdAt: false }
@@ -44,4 +44,4 @@ export const GET = requireAuth(async () => {
 			status: 500
 		});
 	}
-});
+};
