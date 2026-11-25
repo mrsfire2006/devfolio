@@ -37,7 +37,9 @@ export const POST = requireAuth(async ({ request }) => {
 				name: body.name,
 				description: body.description,
 				status: body.status,
-				githubUrl: body.githubUrl
+				githubUrl: body.githubUrl,
+				metaData: body.metaData,
+				livePreview: body.livePreview
 			})
 			.returning();
 
