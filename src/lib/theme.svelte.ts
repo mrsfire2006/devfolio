@@ -12,14 +12,14 @@ const KEY = 'theme';
 const isTheme = (value: string | null): value is ThemeId => themes.some((t) => t.id === value);
 
 class ThemeState {
-	current = $state<ThemeId>('warm');
+	current = $state<ThemeId>('original');
 
 	init() {
 		try {
 			const saved = localStorage.getItem(KEY);
-			this.apply(isTheme(saved) ? saved : 'warm');
+			this.apply(isTheme(saved) ? saved : 'original');
 		} catch {
-			this.apply('warm');
+			this.apply('original');
 		}
 	}
 
